@@ -44,6 +44,15 @@ dialog[open]{animation:sheet .38s cubic-bezier(.2,.9,.25,1)}@keyframes sheet{fro
 .boom b{position:absolute;left:-40px;top:-40px;width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#00e676,#00bfa5);display:grid;place-items:center;font-size:44px;color:#fff;animation:pop .9s ease forwards}
 @keyframes pop{0%{transform:scale(0)}30%{transform:scale(1.15)}70%{transform:scale(1);opacity:1}100%{opacity:0;transform:scale(.9)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+nav{gap:0;padding:6px 2px calc(6px + env(safe-area-inset-bottom));background:rgba(15,17,24,.6);-webkit-backdrop-filter:blur(20px) saturate(160%);backdrop-filter:blur(20px) saturate(160%);border-top:1px solid rgba(255,255,255,.08)}
+nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:54px;padding:4px 0;font-size:10px;letter-spacing:-.1px;color:#7d8599;text-shadow:none}
+nav button span{white-space:nowrap}nav button .ic{width:24px;height:24px;transition:transform .2s}
+nav button.on{color:#fff;text-shadow:0 0 8px #a855f7aa}nav button.on .ic{color:#00e5ff;filter:drop-shadow(0 0 6px #00e5ffaa) drop-shadow(0 0 10px #a855f788);animation:bnc .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bnc{0%{transform:scale(.8) translateY(2px)}60%{transform:scale(1.15) translateY(-2px)}100%{transform:none}}
+header{display:flex;align-items:center;gap:10px}header .ic{width:26px;height:26px;color:#00e5ff;filter:drop-shadow(0 0 6px #00e5ff88)}
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+@media (prefers-reduced-motion:reduce){nav button.on .ic{animation:none}}
 </style></head><body>
 <header id="ttl">Today</header><main id="v"></main>
 <nav id="nav"></nav><dialog id="dlg"></dialog>
@@ -81,7 +90,9 @@ const LIB=[{"n":"Semaglutide","c":"Metabolic / weight","hl":"About 1 week (~7 da
 ;
 const TABS=[['today','Today'],['prot','Protocols'],['lib','Library'],['cal','Calendar'],['log','History'],['vit','Vitals'],['tools','Tools']];
 let tab='today',calM=null;
-function go(t){tab=t;const m=$('#v');m.classList.remove('sw');void m.offsetWidth;m.classList.add('sw');$('#ttl').textContent=TABS.find(x=>x[0]===t)[1];$('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${k===t?'on':''}" onclick="go('${k}')">${n}</button>`).join('');V[t]();scrollTo(0,0)}
+const ICO={today:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',prot:'<rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2.5" width="6" height="3.5" rx="1"/><path d="M9 11h6M9 15h4"/>',lib:'<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="M16 5l3.5-1 2.5 15.5-3.5 1z"/>',cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',log:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',vit:'<path d="M12 20s-7-4.5-8.5-9A4.5 4.5 0 0112 7.5 4.5 4.5 0 0120.5 11C19 15.5 12 20 12 20z"/><path d="M3 12h4l1.5-2.5 2 5 1.5-2.5h2"/>',tools:'<path d="M14.5 6.5a4 4 0 015 5l-1.5-1.5-2 .5-.5 2 1.5 1.5a4 4 0 01-5-5L4 17.5 6.5 20l8-8"/>'};
+const ico=k=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICO[k]}</svg>`;
+function go(t){tab=t;const m=$('#v');m.classList.remove('sw');void m.offsetWidth;m.classList.add('sw');$('#ttl').textContent=TABS.find(x=>x[0]===t)[1];$('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${k===t?'on':''}" onclick="go('${k}')" aria-label="${n}">${ico(k)}<span>${n}</span></button>`).join('');$('#ttl').innerHTML=ico(t)+`<span>${TABS.find(x=>x[0]===t)[1]}</span>`;V[t]();scrollTo(0,0)}
 function doseCard(p,d){const mg=doseOn(p,d),u=units(p,mg),l=logFor(p.id,d);
  return `<div class="card"><div class="row"><div><div class="big">${esc(p.name)}</div><div class="mut">${fmt(d)} · ${esc(p.time)} · ${mg} ${U(p)}${u!=null?` · <b>${u} units</b>`:''}</div></div>
  ${l?`<span class="pill okc">${l.status==='taken'?'✓ '+new Date(l.takenAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Skipped'}</span>`:`<button class="ok" data-take="${p.id}|${d}">Mark taken</button>`}</div></div>`}
