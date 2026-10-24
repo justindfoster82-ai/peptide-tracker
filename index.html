@@ -135,7 +135,7 @@ tools(){$('#v').innerHTML=`<div class="card"><b>Reverse BAC calculator</b><p cla
  <label>Units wanted per dose</label><input id="ru" type="number" value="10"><p class="big" id="rout"></p></div>
  <div class="card" id="hghcalc"><b>HGH / IU reconstitution calculator</b>
  <div class="g2"><div><label>Vial IU</label><input id="hv" type="number" step="any" value="36"></div><div><label>Water mL</label><input id="hm" type="number" step="any" value="1.8"></div></div>
- <div class="row" style="margin-top:8px">${[1,2,1.8].map(m=>`<button class="sec" style="flex:1" onclick="$('#hm').value=${m};hf()">${m} mL</button>`).join('')}</div>
+ <div class="row" style="margin-top:8px">${[1,1.8,3.6].map(m=>`<button class="sec" style="flex:1" onclick="$('#hm').value=${m};hf()">${m} mL</button>`).join('')}</div>
  <label>Dose IU</label><input id="hd" type="number" step="any" value="2"><div id="hout" class="big" style="margin-top:8px"></div>
  <p class="mut">Reverse: units wanted per dose → water to add</p><label>Target units per dose</label><input id="hu" type="number" step="any" value="10"><p class="big" id="hrout"></p></div>
  <div class="card"><b>Calendar reminders</b><p class="mut">Download an .ics with the next 8 weeks of doses (with 0-min alerts) and open it to add to your phone calendar.</p><button onclick="ics()" style="width:100%">Export .ics</button></div>
