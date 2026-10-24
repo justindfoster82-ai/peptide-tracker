@@ -26,6 +26,24 @@ nav button{flex:1;background:none;border-radius:0;color:var(--mut);font-size:11p
 .days label{display:inline-flex;align-items:center;gap:4px;margin:4px 8px 4px 0;color:var(--tx)}.days input{width:22px;min-height:22px}
 dialog{background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:16px;width:94vw;max-width:520px;max-height:90vh;overflow:auto}
 dialog::backdrop{background:#000a}
+
+body{background:radial-gradient(1200px 600px at 10% -10%,#3a1d6e55,transparent),radial-gradient(900px 500px at 110% 10%,#00d4ff33,transparent),var(--bg);background-attachment:fixed}
+header{background:linear-gradient(90deg,#00e5ff,#a855f7,#ff3cac,#00e5ff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:hue 8s linear infinite}
+@keyframes hue{to{background-position:300% 0}}
+.card{background:rgba(26,29,40,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 30px #0006,inset 0 1px 0 #ffffff10;animation:cin .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*45ms)}
+@keyframes cin{from{opacity:0;transform:translateY(14px)}}
+main.sw{animation:tab .3s ease both}@keyframes tab{from{opacity:0;transform:translateX(18px)}}
+button{position:relative;overflow:hidden;transition:transform .12s,filter .12s}button:active{transform:scale(.96);filter:brightness(1.15)}
+main button:not(.sec):not(.dan):not(.ok),dialog button:not(.sec):not(.dan):not(.ok){background:linear-gradient(135deg,#00b4ff,#a855f7)}button.ok{background:linear-gradient(135deg,#00e676,#00bfa5)}
+.rip{position:absolute;border-radius:50%;background:#fff6;transform:scale(0);animation:rip .5s ease-out;pointer-events:none}@keyframes rip{to{transform:scale(4);opacity:0}}
+nav{background:rgba(15,17,24,.75);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}nav button.on{color:#fff;text-shadow:0 0 10px #a855f7}
+dialog[open]{animation:sheet .38s cubic-bezier(.2,.9,.25,1)}@keyframes sheet{from{transform:translateY(60px);opacity:0}}dialog{background:rgba(22,25,34,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.ring circle.fg{transition:stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1);animation:ring 1.1s cubic-bezier(.2,.8,.2,1) both}@keyframes ring{from{stroke-dashoffset:var(--c)}}
+.boom{position:fixed;left:50%;top:45%;z-index:99;pointer-events:none}.boom i{position:absolute;width:9px;height:9px;border-radius:2px;animation:conf 1s cubic-bezier(.1,.7,.3,1) forwards}
+@keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(540deg);opacity:0}}
+.boom b{position:absolute;left:-40px;top:-40px;width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#00e676,#00bfa5);display:grid;place-items:center;font-size:44px;color:#fff;animation:pop .9s ease forwards}
+@keyframes pop{0%{transform:scale(0)}30%{transform:scale(1.15)}70%{transform:scale(1);opacity:1}100%{opacity:0;transform:scale(.9)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body>
 <header id="ttl">Today</header><main id="v"></main>
 <nav id="nav"></nav><dialog id="dlg"></dialog>
@@ -63,7 +81,7 @@ const LIB=[{"n":"Semaglutide","c":"Metabolic / weight","hl":"About 1 week (~7 da
 ;
 const TABS=[['today','Today'],['prot','Protocols'],['lib','Library'],['cal','Calendar'],['log','History'],['vit','Vitals'],['tools','Tools']];
 let tab='today',calM=null;
-function go(t){tab=t;$('#ttl').textContent=TABS.find(x=>x[0]===t)[1];$('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${k===t?'on':''}" onclick="go('${k}')">${n}</button>`).join('');V[t]();scrollTo(0,0)}
+function go(t){tab=t;const m=$('#v');m.classList.remove('sw');void m.offsetWidth;m.classList.add('sw');$('#ttl').textContent=TABS.find(x=>x[0]===t)[1];$('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${k===t?'on':''}" onclick="go('${k}')">${n}</button>`).join('');V[t]();scrollTo(0,0)}
 function doseCard(p,d){const mg=doseOn(p,d),u=units(p,mg),l=logFor(p.id,d);
  return `<div class="card"><div class="row"><div><div class="big">${esc(p.name)}</div><div class="mut">${fmt(d)} · ${esc(p.time)} · ${mg} ${U(p)}${u!=null?` · <b>${u} units</b>`:''}</div></div>
  ${l?`<span class="pill okc">${l.status==='taken'?'✓ '+new Date(l.takenAt).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Skipped'}</span>`:`<button class="ok" data-take="${p.id}|${d}">Mark taken</button>`}</div></div>`}
@@ -72,14 +90,14 @@ function libOpen(i){const p=LIB[i],R=(k,v)=>`<label>${k}</label><div>${esc(v)}</
 const V={
 lib(){const cats=[...new Set(LIB.map(p=>p.c))];const draw=()=>{const q=libQ.toLowerCase();const L=LIB.map((p,i)=>({p,i})).filter(({p})=>(!libC||p.c===libC)&&(!q||(p.n+' '+p.al+' '+p.what).toLowerCase().includes(q)));let h='',last='';for(const {p,i} of L.sort((a,b)=>a.p.c.localeCompare(b.p.c)||a.p.n.localeCompare(b.p.n))){if(p.c!==last){h+=`<h3>${esc(p.c)}</h3>`;last=p.c}h+=`<div class="card libi" onclick="libOpen(${i})" style="cursor:pointer"><b>${esc(p.n)}</b><div class="mut">${esc(p.hl.length>70?p.hl.slice(0,70)+'…':p.hl)}</div></div>`}$('#libl').innerHTML=h||'<div class="card mut">No matches.</div>'};
  $('#v').innerHTML=`<input id="libs" placeholder="Search ${LIB.length} peptides…" value="${esc(libQ)}"><select id="libc" style="margin-top:8px"><option value="">All categories</option>${cats.map(c=>`<option ${c===libC?'selected':''}>${esc(c)}</option>`).join('')}</select><p class="mut">Educational only, not medical advice. Data compiled Oct 2026 from FDA labels, PubMed and WADA; verify before use.</p><div id="libl"></div>`;$('#libs').oninput=e=>{libQ=e.target.value;draw()};$('#libc').onchange=e=>{libC=e.target.value;draw()};draw()},
-today(){const t=today();let h='';const list=S.protocols.filter(p=>due(p,t));
+today(){const t=today();let h='';const list=S.protocols.filter(p=>due(p,t));const dn=list.filter(p=>logFor(p.id,t)).length;h+=`<div class="card row" style="justify-content:flex-start;gap:16px">${ring(list.length?dn/list.length:1,list.length?dn+'/'+list.length:'✓','done','b')}<div><div class="big">${new Date().toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})}</div><div class="mut">${list.length?(dn===list.length?'All doses done 🎉':(list.length-dn)+' dose(s) left today'):'Rest day — no doses due'}</div></div></div>`;
  h+=list.length?list.map(p=>doseCard(p,t)).join(''):`<div class="card mut">No doses due today.</div>`;
  for(const p of S.protocols){const s=supply(p);if(s&&s.exp&&s.exp<=addD(t,5))h+=`<div class="card ${s.exp<t?'bad':'warn'}">⚠ ${esc(p.name)} vial ${s.exp<t?'expired':'expires'} ${fmt(s.exp)} (28 days after mixing)</div>`;
   if(s&&s.left<=2&&p.vialMg)h+=`<div class="card warn">⚠ ${esc(p.name)}: ${s.left} dose(s) left in vial</div>`}
  const m=missed();if(m.length)h+=`<h3>Missed</h3>`+m.map(x=>doseCard(x.p,x.d).replace('Mark taken','Log late')).join('');
  $('#v').innerHTML=h;bindTake()},
 prot(){$('#v').innerHTML=`<button onclick="editP()" style="width:100%">+ Add peptide</button>`+S.protocols.map(p=>{const c=conc(p),s=supply(p),u=units(p,+p.doseMg),u2=p.stepDate&&p.stepDoseMg?units(p,+p.stepDoseMg):null;
- return `<div class="card"><div class="row"><div class="big">${esc(p.name)}</div><button class="sec" onclick="editP('${p.id}')">Edit</button></div>
+ return `<div class="card"><div class="row"><div class="row" style="gap:12px">${s&&doseOn(p,today())?ring(s.left/Math.max(1,Math.floor(p.vialMg/doseOn(p,today()))),s.left,'doses','a'):''}<div class="big">${esc(p.name)}</div></div><button class="sec" onclick="editP('${p.id}')">Edit</button></div>
  <div class="mut">${p.schedType==='every'?'Every '+p.every+' days':(p.days||[]).map(i=>DOW[i]).join(', ')} at ${esc(p.time)} · from ${p.start||'?'}${p.end?' to '+p.end:''}</div>
  <p>Vial ${p.vialMg||'?'} ${U(p)} + ${p.bacMl||'?'} mL BAC = <b>${c?r2(c)+' '+U(p)+'/mL':'—'}</b></p>
  <p>Dose ${p.doseMg} ${U(p)} = <b class="u1">${u??'—'} units</b>${u2!=null?`<br>From ${p.stepDate}: ${p.stepDoseMg} ${U(p)} = <b class="u2">${u2} units</b>`:''}</p>
@@ -116,6 +134,10 @@ tools(){$('#v').innerHTML=`<div class="card"><b>Reverse BAC calculator</b><p cla
 function hf(){const v=+$('#hv').value,m=+$('#hm').value,d=+$('#hd').value,u=+$('#hu').value;
  $('#hout').innerHTML=v&&m&&d?`${r2(v/m)} IU/mL<br>${r2(d/(v/m)*100)} units per dose<br>${Math.floor(v/d+1e-9)} doses per vial<br>${Math.floor(v/d+1e-9)} days per vial (daily)`:'';
  $('#hrout').textContent=v&&d&&u?`Add ${r2(v*u/(d*100))} mL → ${r2(d*100/u)} IU/mL`:''}
+function ring(f,label,sub,col){f=Math.max(0,Math.min(1,f||0));const r=30,c=2*Math.PI*r;return `<svg class="ring" width="76" height="76" viewBox="0 0 76 76" style="--c:${c}"><defs><linearGradient id="rg${col}" x1="0" x2="1"><stop offset="0" stop-color="${col==='a'?'#00e5ff':'#00e676'}"/><stop offset="1" stop-color="${col==='a'?'#a855f7':'#00bfa5'}"/></linearGradient></defs><circle cx="38" cy="38" r="${r}" fill="none" stroke="#ffffff14" stroke-width="7"/><circle class="fg" cx="38" cy="38" r="${r}" fill="none" stroke="url(#rg${col})" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-f)}" transform="rotate(-90 38 38)"/><text x="38" y="${sub?36:43}" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">${label}</text>${sub?`<text x="38" y="51" text-anchor="middle" fill="#8a92a6" font-size="9">${sub}</text>`:''}</svg>`}
+function burst(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const b=document.createElement('div');b.className='boom';let h='<b>✓</b>';const C=['#00e5ff','#a855f7','#ff3cac','#00e676','#ffd166'];for(let i=0;i<28;i++){const a=Math.random()*6.283,d=90+Math.random()*120;h+=`<i style="--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d}px;background:${C[i%5]}"></i>`}b.innerHTML=h;document.body.appendChild(b);setTimeout(()=>b.remove(),1100)}
+document.addEventListener('pointerdown',e=>{const t=e.target.closest('button');if(!t)return;const r=t.getBoundingClientRect(),d=Math.max(r.width,r.height),s=document.createElement('span');s.className='rip';s.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;t.appendChild(s);setTimeout(()=>s.remove(),500)});
+new MutationObserver(()=>document.querySelectorAll('#v .card').forEach((c,i)=>c.style.setProperty('--i',Math.min(i,12)))).observe(document.getElementById('v'),{childList:true});
 function chart(data,series){const pts=data.filter(v=>series.some(([k])=>v[k]));if(pts.length<1)return '<p class="mut">No data yet.</p>';
  const W=340,H=150,vals=pts.flatMap(v=>series.map(([k])=>+v[k]).filter(Boolean)),mn=Math.min(...vals)-2,mx=Math.max(...vals)+2,x=i=>pts.length<2?W/2:10+i*(W-20)/(pts.length-1),y=v=>H-10-(v-mn)/(mx-mn)*(H-20);
  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${series.map(([k,c])=>{const ps=pts.map((v,i)=>v[k]?[x(i),y(+v[k])]:null).filter(Boolean);return `<polyline fill="none" stroke="${c}" stroke-width="2.5" points="${ps.map(p=>p.join(',')).join(' ')}"/>`+ps.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${c}"/>`).join('')}).join('')}<text x="2" y="12" fill="#8a92a6" font-size="11">${r2(mx)}</text><text x="2" y="${H-2}" fill="#8a92a6" font-size="11">${r2(mn)}</text></svg>`}
@@ -128,7 +150,7 @@ function takeDlg(pid,d,lid){const p=S.protocols.find(x=>x.id===pid),l=lid?S.logs
  <label>Notes / effects</label><textarea id="ln" rows="3">${esc(l?l.notes:'')}</textarea>
  <label>Status</label><select id="lst"><option value="taken">Taken</option><option value="skipped" ${l&&l.status==='skipped'?'selected':''}>Skipped</option></select>
  <p class="g2"><button class="ok" id="lsave">Save</button><button class="sec" onclick="$('#dlg').close()">Cancel</button></p>${l?'<button class="dan" id="ldel" style="width:100%">Delete entry</button>':''}`);
- $('#lsave').onclick=()=>{const e=l||{id:uid(),pid,date:d};Object.assign(e,{doseMg:+$('#ld').value,takenAt:new Date($('#lt').value).toISOString(),site:$('#ls').value,notes:$('#ln').value,status:$('#lst').value});if(!l)S.logs.push(e);save();$('#dlg').close();V[tab]()};
+ $('#lsave').onclick=()=>{const e=l||{id:uid(),pid,date:d};Object.assign(e,{doseMg:+$('#ld').value,takenAt:new Date($('#lt').value).toISOString(),site:$('#ls').value,notes:$('#ln').value,status:$('#lst').value});if(!l)S.logs.push(e);save();$('#dlg').close();V[tab]();if(e.status==='taken'&&!l)burst()};
  if(l)$('#ldel').onclick=()=>{if(confirm('Delete entry?')){S.logs=S.logs.filter(x=>x.id!==l.id);save();$('#dlg').close();V[tab]()}}}
 function dlg(h){$('#dlg').innerHTML=h;$('#dlg').showModal()}
 function editP(id){const p=id?S.protocols.find(x=>x.id===id):{id:uid(),name:'',unit:'mg',vialMg:'',bacMl:'',doseMg:'',stepDate:'',stepDoseMg:'',schedType:'dow',days:[],every:1,time:'09:00',start:today(),end:'',mixed:'',notes:''};
